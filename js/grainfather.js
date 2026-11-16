@@ -95,6 +95,7 @@ export function leererZustand() {
     firmware: '',
     fehler: '',
     zuletzt: 0,
+    verbundenSeit: 0,
   };
 }
 
@@ -143,6 +144,33 @@ export function verarbeite(zustand, zeile) {
   return true;
 }
 
+/**
+ * Zerlegt den Datenstrom der Steuerung in einzelne Meldungen.
+ * Die Steuerung sendet ihre Meldungen (je 17 Zeichen, mit „Z“ aufgefüllt) als fortlaufenden
+ * Strom; ein Bluetooth-Paket beginnt deshalb nicht unbedingt mit dem Anfang einer Meldung
+ * und kann mehrere oder nur Teile enthalten.
+ * Liefert die vollständigen Meldungen und den noch unvollständigen Rest.
+ */
+const MELDUNG_LAENGE = 17;
+export function zerlege(puffer, text) {
+  let daten = (puffer + String(text)).replace(/[\0\r\n]/g, '');
+  const meldungen = [];
+  for (;;) {
+    const start = daten.search(/[ABCEFITVWXY]/);
+    if (start < 0) return { meldungen, rest: '' };
+    daten = daten.slice(start);
+    // Eine Meldung endet mit dem nächsten Kennbuchstaben oder mit ihrer festen Länge.
+    const naechste = daten.slice(1).search(/[ABCEFITVWXY]/);
+    let ende = naechste >= 0 ? naechste + 1 : -1;
+    // Ohne Folgemeldung gilt sie ab 17 Zeichen als vollständig – aber nur an einer Feldgrenze,
+    // damit keine Zahl mitten im Wert abgeschnitten wird.
+    if (ende < 0 && daten.length >= MELDUNG_LAENGE && /[Z,]$/.test(daten)) ende = daten.length;
+    if (ende < 0) return { meldungen, rest: daten.slice(0, 64) };
+    meldungen.push(daten.slice(0, ende));
+    daten = daten.slice(ende);
+  }
+}
+
 // ---------- Verbindung ----------
 
 export const gf = leererZustand();
@@ -152,6 +180,7 @@ let geraet = null;
 let schreiber = null;
 let leser = null;
 let schlange = Promise.resolve();
+let empfangsPuffer = '';
 const dekoder = new TextDecoder();
 const enkoder = new TextEncoder();
 
@@ -179,7 +208,9 @@ function logge(richtung, text) {
 function empfangen(e) {
   const text = dekoder.decode(e.target.value);
   logge('<', text);
-  verarbeite(gf, text);
+  const teile = zerlege(empfangsPuffer, text);
+  empfangsPuffer = teile.rest;
+  for (const meldung of teile.meldungen) verarbeite(gf, meldung);
   melde();
 }
 
@@ -187,6 +218,7 @@ function getrennt() {
   leser?.removeEventListener('characteristicvaluechanged', empfangen);
   schreiber = null;
   leser = null;
+  empfangsPuffer = '';
   const name = gf.geraet;
   Object.assign(gf, leererZustand(), { geraet: name });
   logge('!', 'Verbindung getrennt');
@@ -209,8 +241,10 @@ export async function verbinde() {
     const dienst = await server.getPrimaryService(GF_SERVICE);
     leser = await dienst.getCharacteristic(GF_LESEN);
     schreiber = await dienst.getCharacteristic(GF_SCHREIBEN);
+    empfangsPuffer = '';
     leser.addEventListener('characteristicvaluechanged', empfangen);
     await leser.startNotifications();
+    gf.verbundenSeit = Date.now();
     gf.verbunden = true;
     gf.geraet = geraet.name || 'Grainfather';
     // Bewusst kein Befehl beim Verbinden: Die Steuerung meldet ihren Zustand von selbst.
@@ -270,7 +304,9 @@ export function simuliere(zeile, verbunden = true) {
   gf.geraet ||= 'Simulation';
   if (zeile) {
     logge('<', zeile);
-    verarbeite(gf, zeile);
+    const teile = zerlege(empfangsPuffer, zeile);
+    empfangsPuffer = teile.rest;
+    for (const meldung of teile.meldungen) verarbeite(gf, meldung);
   }
   melde();
 }
