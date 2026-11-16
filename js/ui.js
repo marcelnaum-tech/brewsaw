@@ -13,7 +13,7 @@ export const fmt = (x, n = 1) =>
 export const sg = (plato) => (Number.isFinite(plato) ? 'SG ' + fmt(platoToSg(plato), 3) : 'SG –');
 
 export const datumDe = (iso) => {
-  if (!iso) return '–';
+  if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '–';
   const [y, m, d] = iso.split('-');
   return `${d}.${m}.${y}`;
 };

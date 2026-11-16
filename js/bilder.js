@@ -5,6 +5,12 @@
 const DB_NAME = 'brewsaw';
 const STORE = 'bilder';
 const speicher = new Map(); // Kennung → Data-URL
+
+// Nur base64-kodierte Rasterbilder. Der Wert wird als src-Attribut in die Seite geschrieben und
+// darf deshalb keine Anführungszeichen oder andere Zeichen enthalten.
+const BILD_URL = /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/]+=*$/;
+const KENNUNG = /^[A-Za-z0-9_-]{1,40}$/;
+export const istBildUrl = (v) => typeof v === 'string' && v.length < 4_000_000 && BILD_URL.test(v);
 let db = null;
 
 function oeffne() {
@@ -38,7 +44,7 @@ export async function ladeBilder() {
       zeiger.onsuccess = () => {
         const c = zeiger.result;
         if (!c) return resolve();
-        speicher.set(c.key, c.value);
+        if (KENNUNG.test(String(c.key)) && istBildUrl(c.value)) speicher.set(c.key, c.value);
         c.continue();
       };
       zeiger.onerror = () => reject(zeiger.error);
@@ -52,6 +58,7 @@ export async function ladeBilder() {
 export const bild = (id) => (id && speicher.get(id)) || '';
 
 export function setzeBild(id, dataUrl) {
+  if (!KENNUNG.test(String(id)) || !istBildUrl(dataUrl)) throw new Error('Ungültige Bilddaten.');
   speicher.set(id, dataUrl);
   return schreibe((s) => s.put(dataUrl, id));
 }
@@ -73,7 +80,7 @@ export const alleBilder = () => Object.fromEntries(speicher);
 /** Ersetzt den gesamten Bildbestand (beim Einlesen einer Sicherung oder beim Zurücksetzen). */
 export function ersetzeBilder(bilder = {}) {
   speicher.clear();
-  for (const [id, url] of Object.entries(bilder)) if (typeof url === 'string' && url.startsWith('data:image/')) speicher.set(id, url);
+  for (const [id, url] of Object.entries(bilder)) if (KENNUNG.test(id) && istBildUrl(url)) speicher.set(id, url);
   return schreibe((s) => {
     s.clear();
     for (const [id, url] of speicher) s.put(url, id);
