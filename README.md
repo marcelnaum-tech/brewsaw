@@ -45,6 +45,8 @@ Die Android-App ist eine „Trusted Web Activity": Sie öffnet die veröffentlic
 Adressleiste. Dadurch funktionieren Bluetooth (Grainfather), Offline-Betrieb und Benachrichtigungen wie im Browser,
 und Aktualisierungen der Web-App kommen ohne neue APK an.
 
+- Web-App online: <https://marcelnaum-tech.github.io/brewsaw/>
+- Verknüpfungsdatei: <https://marcelnaum-tech.github.io/.well-known/assetlinks.json> (Repository `marcelnaum-tech.github.io`)
 - Projekt: `android/` (nur Manifest und Ressourcen, kein eigener Programmcode).
 - Adresse der Web-App und App-Kennung: `android/gradle.properties`.
 - Bauen: `android/bauen.bat` – erzeugt `android/Brewsaw.apk`.
