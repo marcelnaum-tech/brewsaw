@@ -1,0 +1,17 @@
+{
+  "name": "Brewsaw – Brauhelfer",
+  "short_name": "Brewsaw",
+  "description": "Rezeptrechner, Wasserrechner, Brautag-Assistent, Gärprotokoll und Zutatenlager für Hobbybrauer.",
+  "lang": "de",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4ead9",
+  "theme_color": "#b4561f",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
