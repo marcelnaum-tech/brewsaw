@@ -1,0 +1,18 @@
+# Lokale Werkzeuge und Build-Ergebnisse
+.android-tools/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+
+# Signaturschlüssel und Passwörter – niemals veröffentlichen
+*.keystore
+*.jks
+android/keystore.properties
+
+# Private Testdaten und lokale Einstellungen
+tests/
+.claude/
+__pycache__/
+*.apk
+*.aab
