@@ -105,7 +105,7 @@ export function brautagView(root, id) {
     const s = schritte[bt.idx];
     // Die Karte nur neu aufbauen, wenn sich ihr Aufbau ändert – Messwerte werden direkt eingetragen,
     // damit Schaltflächen bei laufenden Meldungen der Steuerung bedienbar bleiben.
-    const signatur = [gf.verbunden, gf.verbinde, gf.fehler, bt.idx, gf.celsius, gf.heizung, gf.pumpe].join('|');
+    const signatur = [gf.verbunden, gf.verbinde, gf.fehler, bt.idx, gf.celsius, gf.heizung, gf.pumpe, gf.wartet, gf.wartetCode].join('|');
     if (signatur !== gfSignatur) {
       gfSignatur = signatur;
       if (!grainfather.unterstuetzt()) {
@@ -121,6 +121,8 @@ export function brautagView(root, id) {
         const fahrenheit = gf.celsius === false;
         box.innerHTML = `<h2>Grainfather <span class="badge s-fertig">verbunden</span></h2>
           <div class="kzs" id="gf-werte"></div>
+          ${gf.wartet ? `<p class="warnung">Die Steuerung wartet auf eine Bestätigung${gf.wartetCode ? ` (Code ${esc(gf.wartetCode)})` : ''}. Das ist eine mögliche Ursache, wenn sie piept.
+            Bestätige am Gerät mit der Set-Taste oder hier: <button class="btn small" data-gf="bestaetigen">Bestätigen</button></p>` : ''}
           ${fahrenheit ? '<p class="warnung">Die Steuerung ist auf °F eingestellt. Bitte am Gerät auf °C umstellen, bevor du Sollwerte sendest.</p>' : ''}
           <div class="leiste">
             ${s.temp && !fahrenheit ? `<button class="btn primary" data-gf="soll" data-t="${s.temp}">Soll auf ${fmt(s.temp, 0)} °C setzen</button>` : ''}
@@ -133,7 +135,8 @@ export function brautagView(root, id) {
             <button class="btn ghost" data-gf="rezept">Maischplan an die Steuerung senden …</button>
             <button class="btn ghost" data-gf="trennen">Trennen</button>
           </div>
-          <details><summary class="hinweis">Protokoll der Verbindung</summary><pre id="gf-log"></pre></details>
+          <details><summary class="hinweis">Protokoll der Verbindung</summary><pre id="gf-log"></pre>
+            <button class="btn small ghost" data-gf="log-kopieren">Protokoll kopieren</button></details>
           <p class="hinweis">Das Bluetooth-Protokoll des Grainfather ist nicht offiziell dokumentiert. Die Anlage nie unbeaufsichtigt heizen lassen
             und Heizung und Pumpe nur einschalten, wenn der Kessel gefüllt ist.</p>`;
       }
@@ -176,11 +179,16 @@ export function brautagView(root, id) {
         tonVorbereiten();
         await grainfather.verbinde();
         if (gf.verbunden) toast(`Verbunden mit ${gf.geraet}.`);
+      } else if (aktion === 'log-kopieren') {
+        await navigator.clipboard.writeText(grainfather.protokoll.join('\n'));
+        toast('Protokoll in die Zwischenablage kopiert.');
       } else if (aktion === 'trennen') {
         grainfather.trenne();
       } else if (aktion === 'soll') {
         await grainfather.sende(grainfather.BEFEHL.solltemperatur(Number(knopf.dataset.t)));
         toast(`Solltemperatur ${fmt(Number(knopf.dataset.t), 0)} °C gesendet.`);
+      } else if (aktion === 'bestaetigen') {
+        await grainfather.sende(grainfather.BEFEHL.hinweisBestaetigen());
       } else if (aktion === 'pumpe') {
         await grainfather.sende(grainfather.BEFEHL.pumpe(!gf.pumpe));
       } else if (aktion === 'heizung') {

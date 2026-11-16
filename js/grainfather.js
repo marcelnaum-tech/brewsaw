@@ -84,6 +84,8 @@ export function leererZustand() {
     pumpe: null,
     automatik: null,
     stufe: null,
+    wartet: null,
+    wartetCode: null,
     heizleistung: null,
     timerAktiv: null,
     timerPausiert: null,
@@ -112,6 +114,8 @@ export function verarbeite(zustand, zeile) {
       zustand.heizung = an(0);
       zustand.pumpe = an(1);
       zustand.automatik = an(2);
+      zustand.wartet = an(4);
+      zustand.wartetCode = f[5] ?? null;
       zustand.stufe = n(6);
       break;
     case 'T':
@@ -122,6 +126,9 @@ export function verarbeite(zustand, zeile) {
     case 'W':
       zustand.heizleistung = n(0);
       zustand.timerPausiert = an(1);
+      break;
+    case 'I':
+      zustand.wartetCode = f[0] ?? null;
       break;
     case 'V':
       zustand.celsius = n(1) === null ? null : n(1) === 1;
@@ -206,10 +213,9 @@ export async function verbinde() {
     await leser.startNotifications();
     gf.verbunden = true;
     gf.geraet = geraet.name || 'Grainfather';
-    logge('!', `Verbunden mit ${gf.geraet}`);
-    // Firmware und Einheiten abfragen – die Antworten kommen als Meldungen F und V.
-    sende(BEFEHL.firmware()).catch(() => {});
-    sende(BEFEHL.einheiten()).catch(() => {});
+    // Bewusst kein Befehl beim Verbinden: Die Steuerung meldet ihren Zustand von selbst.
+    // Automatische Abfragen direkt nach dem Verbinden haben am Gerät einen Dauerton ausgelöst.
+    logge('!', `Verbunden mit ${gf.geraet} (Schreiben: ${schreibart()})`);
   } catch (e) {
     // Abbruch der Geräteauswahl ist kein Fehler.
     if (e?.name !== 'NotFoundError') gf.fehler = e?.message || String(e);
@@ -233,14 +239,20 @@ export function trenne() {
   }
 }
 
+function schreibart() {
+  if (!schreiber) return 'nicht verbunden';
+  return schreiber.properties?.writeWithoutResponse && schreiber.writeValueWithoutResponse ? 'ohne Antwort' : 'mit Antwort';
+}
+
 /** Sendet einen Befehl. Befehle werden nacheinander abgearbeitet. */
 export function sende(befehl) {
   const daten = enkoder.encode(paket(befehl));
   const auftrag = schlange.then(async () => {
     if (!schreiber) throw new Error('Der Grainfather ist nicht verbunden.');
     logge('>', befehl);
-    if (schreiber.writeValueWithResponse && schreiber.properties?.write) await schreiber.writeValueWithResponse(daten);
-    else if (schreiber.writeValueWithoutResponse) await schreiber.writeValueWithoutResponse(daten);
+    // Das Referenzbeispiel der Protokollbeschreibung schreibt ohne Antwort („write without response“).
+    if (schreibart() === 'ohne Antwort') await schreiber.writeValueWithoutResponse(daten);
+    else if (schreiber.writeValueWithResponse) await schreiber.writeValueWithResponse(daten);
     else await schreiber.writeValue(daten);
   });
   // Ein fehlgeschlagener Befehl darf die folgenden nicht blockieren.
