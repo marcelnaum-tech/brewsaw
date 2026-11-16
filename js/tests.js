@@ -4,6 +4,8 @@ import { BIBLIOTHEK as ALLE } from './bibliothek.js';
 import { filtere } from './suche.js';
 import { leseBeerXml } from './beerxml.js';
 import * as g from './grainfather.js';
+import { bereinige } from './store.js';
+import { istBildUrl } from './bilder.js';
 
 const ergebnisse = [];
 function nahe(name, ist, soll, tol) {
@@ -196,6 +198,26 @@ let xmlFehler = 0;
 try { leseBeerXml('<a><b></a>'); } catch { xmlFehler++; }
 try { leseBeerXml('<RECIPES></RECIPES>'); } catch { xmlFehler++; }
 nahe('BeerXML: ungültige Dateien werden abgelehnt', xmlFehler, 2, 0);
+
+// Sicherheit: präparierte Sicherungsdatei
+const boese = '"><img src=x onerror=alert(1)>';
+const sauber = bereinige({
+  settings: { theme: boese, wasserRezeptId: boese, naechsteSudNr: boese },
+  rezepte: [{ id: boese, bildId: boese, kategorie: boese, name: boese, hops: [{ art: boese, form: boese }], hefe: { einheit: boese } }, null, 'x'],
+  sude: [{ id: boese, nr: boese, status: boese, datum: boese, rezept: { id: boese }, gaerung: [{ datum: boese }], abfuellung: { datum: boese, zucker: '__proto__' } }, { id: 'ohne-rezept' }],
+  lager: [{ id: boese, art: 'hopfen', mhd: boese }, { id: 'a', art: boese }],
+});
+const technisch = JSON.stringify([
+  sauber.settings, sauber.rezepte.map((r) => [r.id, r.bildId, r.kategorie, r.hops, r.hefe]),
+  sauber.sude.map((s) => [s.id, s.nr, s.status, s.datum, s.rezept.id, s.gaerung, s.abfuellung]), sauber.lager,
+]);
+nahe('Sicherheit: technische Felder enthalten kein eingeschleustes HTML', /[<>"]\s*img|onerror/.test(technisch) ? 0 : 1, 1, 0);
+nahe('Sicherheit: ungültige Einträge werden verworfen', sauber.rezepte.length * 100 + sauber.sude.length * 10 + sauber.lager.length, 111, 0);
+nahe('Sicherheit: Kennungen werden neu vergeben', /^[A-Za-z0-9_-]+$/.test(sauber.rezepte[0].id + sauber.sude[0].id + sauber.lager[0].id) ? 1 : 0, 1, 0);
+nahe('Sicherheit: Name bleibt als Text erhalten (wird bei der Anzeige entschärft)', sauber.rezepte[0].name === boese ? 1 : 0, 1, 0);
+nahe('Sicherheit: Bilddaten mit Anführungszeichen abgelehnt', istBildUrl('data:image/png;base64,AAAA" onerror="alert(1)') ? 1 : 0, 0, 0);
+nahe('Sicherheit: SVG und fremde Adressen abgelehnt', (istBildUrl('data:image/svg+xml;base64,AAAA') ? 1 : 0) + (istBildUrl('https://example.com/x.png') ? 1 : 0), 0, 0);
+nahe('Sicherheit: gültiges JPEG angenommen', istBildUrl('data:image/jpeg;base64,/9j/4AAQSkZJRg==') ? 1 : 0, 1, 0);
 
 // Grainfather-Protokoll
 const gleich = (name, ist, soll) => nahe(`${name}: „${ist}“`, ist === soll ? 1 : 0, 1, 0);

@@ -55,6 +55,63 @@ function zusammenfuehren(basis, daten) {
   return daten;
 }
 
+const KENNUNG = /^[A-Za-z0-9_-]{1,40}$/;
+const STATUS_WERTE = ['geplant', 'brautag', 'gaerung', 'reifung', 'fertig'];
+const LAGER_WERTE = ['malz', 'hopfen', 'hefe', 'sonstiges'];
+const DATUM = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Bringt technische Felder aus gespeicherten oder importierten Daten in eine sichere Form.
+ * Diese Felder landen in Adressen und HTML-Attributen; eine präparierte Sicherungsdatei
+ * darf darüber keinen fremden Code einschleusen. Texte wie Namen und Notizen werden
+ * unabhängig davon bei jeder Anzeige entschärft.
+ */
+export function bereinige(d) {
+  const kennung = (v) => (typeof v === 'string' && KENNUNG.test(v) ? v : uid());
+  const datum = (v) => (typeof v === 'string' && DATUM.test(v) ? v : '');
+  const rezept = (r) => {
+    if (!r || typeof r !== 'object') return;
+    r.id = kennung(r.id);
+    if (r.bildId !== undefined && !(typeof r.bildId === 'string' && KENNUNG.test(r.bildId))) delete r.bildId;
+    if (typeof r.kategorie !== 'string' || !/^[a-z]{0,4}$/.test(r.kategorie)) r.kategorie = '';
+    for (const feld of ['malts', 'hops', 'rasten']) if (!Array.isArray(r[feld])) r[feld] = [];
+    for (const h of r.hops) {
+      if (!['vwh', 'kochen', 'whirlpool', 'stopfen'].includes(h.art)) h.art = 'kochen';
+      if (h.form !== 'dolden') h.form = 'pellets';
+    }
+    if (!r.hefe || typeof r.hefe !== 'object') r.hefe = { name: '', evg: 75, temp: 18, menge: 1, einheit: 'Pkg.' };
+    if (!['Pkg.', 'g', 'ml'].includes(r.hefe.einheit)) r.hefe.einheit = 'Pkg.';
+  };
+  d.rezepte = (Array.isArray(d.rezepte) ? d.rezepte : []).filter((r) => r && typeof r === 'object');
+  d.rezepte.forEach(rezept);
+  d.sude = (Array.isArray(d.sude) ? d.sude : []).filter((s) => s && typeof s === 'object' && s.rezept && typeof s.rezept === 'object');
+  for (const s of d.sude) {
+    s.id = kennung(s.id);
+    s.nr = Number.isFinite(Number(s.nr)) ? Math.round(Number(s.nr)) : 0;
+    if (!STATUS_WERTE.includes(s.status)) s.status = 'geplant';
+    s.datum = datum(s.datum);
+    rezept(s.rezept);
+    if (!s.mess || typeof s.mess !== 'object') s.mess = {};
+    if (!s.abfuellung || typeof s.abfuellung !== 'object') s.abfuellung = {};
+    s.abfuellung.datum = datum(s.abfuellung.datum);
+    if (!Object.prototype.hasOwnProperty.call({ haushalt: 1, traube: 1 }, s.abfuellung.zucker)) s.abfuellung.zucker = 'haushalt';
+    s.gaerung = (Array.isArray(s.gaerung) ? s.gaerung : []).filter((g) => g && typeof g === 'object');
+    for (const g of s.gaerung) g.datum = datum(g.datum);
+    if (s.brautag && typeof s.brautag !== 'object') s.brautag = null;
+  }
+  d.lager = (Array.isArray(d.lager) ? d.lager : []).filter((p) => p && typeof p === 'object' && LAGER_WERTE.includes(p.art));
+  for (const p of d.lager) {
+    p.id = kennung(p.id);
+    p.mhd = datum(p.mhd);
+  }
+  if (d.settings && typeof d.settings === 'object') {
+    if (!['auto', 'hell', 'dunkel'].includes(d.settings.theme)) d.settings.theme = 'auto';
+    if (typeof d.settings.wasserRezeptId !== 'string' || !KENNUNG.test(d.settings.wasserRezeptId)) d.settings.wasserRezeptId = '';
+    d.settings.naechsteSudNr = Math.max(1, Math.round(Number(d.settings.naechsteSudNr)) || 1);
+  }
+  return d;
+}
+
 function gueltig(d) {
   return d && typeof d === 'object' && Array.isArray(d.rezepte) && Array.isArray(d.sude);
 }
@@ -64,7 +121,7 @@ function laden() {
     const roh = localStorage.getItem(KEY);
     if (roh) {
       const d = JSON.parse(roh);
-      if (gueltig(d)) return zusammenfuehren(standard(), d);
+      if (gueltig(d)) return bereinige(zusammenfuehren(standard(), d));
     }
   } catch (e) {
     console.warn('Daten konnten nicht geladen werden', e);
@@ -311,7 +368,7 @@ export function importJson(text) {
   delete d.exportiert;
   ersetzeBilder(d.bilder && typeof d.bilder === 'object' ? d.bilder : {});
   delete d.bilder;
-  const neu = zusammenfuehren(standard(), d);
+  const neu = bereinige(zusammenfuehren(standard(), d));
   for (const k of Object.keys(state)) delete state[k];
   Object.assign(state, neu);
   speichernSofort();
