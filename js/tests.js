@@ -222,6 +222,26 @@ nahe('Grainfather: Heizleistung und Pause', gz.heizleistung + (gz.timerPausiert 
 g.verarbeite(gz, 'V0,1,ZZZZZZZZZZZZ');
 nahe('Grainfather: Einheit °C erkannt', gz.celsius === true ? 1 : 0, 1, 0);
 nahe('Grainfather: unbekannte Meldung wird ignoriert', g.verarbeite(gz, 'Qxyz') ? 1 : 0, 0, 0);
+// Datenstrom: Pakete beginnen nicht unbedingt am Anfang einer Meldung
+const strom = 'T0,0,0,0,ZZZZZZZZX61.0,22.8,ZZZZZZY1,1,0,0,0,0,0,0,ZW100,0,0,0,0,0,ZZ';
+const gs = g.leererZustand();
+let puffer = '';
+const alle = [];
+for (let i = 0; i < strom.length; i += 20) {
+  const t = g.zerlege(puffer, strom.slice(i, i + 20));
+  puffer = t.rest;
+  alle.push(...t.meldungen);
+  t.meldungen.forEach((m) => g.verarbeite(gs, m));
+}
+nahe('Grainfather: Strom in 20er-Paketen ergibt 4 Meldungen', alle.length, 4, 0);
+gleich('Grainfather: zerlegte Meldung', alle[1], 'X61.0,22.8,ZZZZZZ');
+nahe('Grainfather: Werte aus zerstückeltem Strom', gs.soll + gs.ist + (gs.heizung ? 1 : 0) + (gs.pumpe ? 1 : 0) + gs.heizleistung, 61 + 22.8 + 2 + 100, 1e-9);
+const mitten = g.zerlege('', '2.8,ZZZZZZX63.0,40.1,ZZZZZZ');
+nahe('Grainfather: Paket, das mitten in einer Meldung beginnt', mitten.meldungen.length === 1 && mitten.meldungen[0].startsWith('X63.0,40.1') ? 1 : 0, 1, 0);
+const halb = g.zerlege('', 'X63.0,4');
+nahe('Grainfather: unvollständige Meldung bleibt im Puffer', halb.meldungen.length === 0 && halb.rest === 'X63.0,4' ? 1 : 0, 1, 0);
+nahe('Grainfather: Rest wird mit dem nächsten Paket vervollständigt', g.zerlege(halb.rest, '0.1,ZZZZZZ').meldungen[0] === 'X63.0,40.1,ZZZZZZ' ? 1 : 0, 1, 0);
+
 // Beispiel aus der Protokollbeschreibung: 75 min Kochen, 2 Rasten, 4 Hopfengaben
 const gfRezept = {
   name: 'Saison', ausschlagL: 23, sha: 70, kochzeit: 75, hauptgussLkg: 3,

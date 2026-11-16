@@ -126,9 +126,15 @@ export function brautagView(root, id) {
           ${fahrenheit ? '<p class="warnung">Die Steuerung ist auf °F eingestellt. Bitte am Gerät auf °C umstellen, bevor du Sollwerte sendest.</p>' : ''}
           <div class="leiste">
             ${s.temp && !fahrenheit ? `<button class="btn primary" data-gf="soll" data-t="${s.temp}">Soll auf ${fmt(s.temp, 0)} °C setzen</button>` : ''}
-            <button class="btn" data-gf="heizung">${gf.heizung ? 'Heizung aus' : 'Heizung an'}</button>
-            <button class="btn" data-gf="pumpe">${gf.pumpe ? 'Pumpe aus' : 'Pumpe an'}</button>
           </div>
+          <div class="schalter">
+            <span class="schalter-gruppe"><b>Heizung</b>
+              <button class="btn" data-gf="heizung-an">An</button><button class="btn" data-gf="heizung-aus">Aus</button></span>
+            <span class="schalter-gruppe"><b>Pumpe</b>
+              <button class="btn" data-gf="pumpe-an">An</button><button class="btn" data-gf="pumpe-aus">Aus</button></span>
+          </div>
+          <p class="warnung" id="gf-stumm" hidden>Die Steuerung sendet keine Statusmeldungen. Befehle kommen an, aber die Anzeige bleibt leer –
+            bitte das Verbindungsprotokoll unten kopieren und weitergeben.</p>
           <label class="check auto"><input type="checkbox" id="gf-auto" ${bt.gfAuto ? 'checked' : ''}>
             <span>Rast-Timer automatisch starten, sobald die Solltemperatur erreicht ist</span></label>
           <div class="leiste">
@@ -143,6 +149,12 @@ export function brautagView(root, id) {
     }
     const werte = root.querySelector('#gf-werte');
     if (werte) {
+      const stumm = root.querySelector('#gf-stumm');
+      if (stumm) stumm.hidden = !(gf.verbundenSeit && !gf.zuletzt && Date.now() - gf.verbundenSeit > 8000);
+      root.querySelectorAll('#gf .schalter [data-gf]').forEach((b) => {
+        const [was, soll] = b.dataset.gf.split('-');
+        b.classList.toggle('primary', gf[was] != null && gf[was] === (soll === 'an'));
+      });
       const timer = gf.timerAktiv ? `${gf.restMin ?? 0}:${String(gf.restSek ?? 0).padStart(2, '0')}` : '–';
       werte.innerHTML =
         kachel('Ist', gf.ist == null ? '–' : fmt(gf.ist), '°C') +
@@ -189,11 +201,17 @@ export function brautagView(root, id) {
         toast(`Solltemperatur ${fmt(Number(knopf.dataset.t), 0)} °C gesendet.`);
       } else if (aktion === 'bestaetigen') {
         await grainfather.sende(grainfather.BEFEHL.hinweisBestaetigen());
-      } else if (aktion === 'pumpe') {
-        await grainfather.sende(grainfather.BEFEHL.pumpe(!gf.pumpe));
-      } else if (aktion === 'heizung') {
-        if (!gf.heizung && !(await bestaetigen('Heizung einschalten?', 'Nur einschalten, wenn der Kessel gefüllt ist und du bei der Anlage bist.', 'Heizung einschalten'))) return;
-        await grainfather.sende(grainfather.BEFEHL.heizung(!gf.heizung));
+      } else if (aktion === 'pumpe-an' || aktion === 'pumpe-aus') {
+        // Eigene Knöpfe für An und Aus: Ausschalten funktioniert auch, wenn der Zustand unbekannt ist.
+        await grainfather.sende(grainfather.BEFEHL.pumpe(aktion === 'pumpe-an'));
+        toast(aktion === 'pumpe-an' ? 'Pumpe an gesendet.' : 'Pumpe aus gesendet.', { dauer: 2000 });
+      } else if (aktion === 'heizung-aus') {
+        await grainfather.sende(grainfather.BEFEHL.heizung(false));
+        toast('Heizung aus gesendet.', { dauer: 2000 });
+      } else if (aktion === 'heizung-an') {
+        if (!(await bestaetigen('Heizung einschalten?', 'Nur einschalten, wenn der Kessel gefüllt ist und du bei der Anlage bist.', 'Heizung einschalten'))) return;
+        await grainfather.sende(grainfather.BEFEHL.heizung(true));
+        toast('Heizung an gesendet.', { dauer: 2000 });
       } else if (aktion === 'rezept') {
         const zeilen = grainfather.rezeptBefehle(sud.rezept, sud.anlage);
         const ok = await bestaetigen(
@@ -318,6 +336,7 @@ export function brautagView(root, id) {
   });
 
   const intervall = setInterval(tick, 250);
+  const gfIntervall = setInterval(zeichneGf, 2000);
   const sichtbar = () => {
     if (!document.hidden && wach) bildschirmAnlassen(true);
   };
@@ -326,6 +345,7 @@ export function brautagView(root, id) {
 
   return () => {
     gfAbo();
+    clearInterval(gfIntervall);
     clearInterval(intervall);
     document.removeEventListener('visibilitychange', sichtbar);
     bildschirmAnlassen(false);
