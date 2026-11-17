@@ -1,5 +1,5 @@
 import {
-  kennzahlen, wassermengen, wasserBehandeln, milchsaeureFuerRa, raEmpfehlung,
+  kennzahlen, wassermengen, wasserBehandeln, milchsaeureFuerRa, raEmpfehlung, maischePh,
   SALZE, DH_HCO3, num, runde,
 } from '../calc.js';
 import { state, speichern, leereZugaben } from '../store.js';
@@ -116,7 +116,7 @@ export function wasserView(root, rezeptId) {
         <div id="tabelle"></div>
         <div id="aufteilung"></div>
         <p class="hinweis">Die Restalkalität nach Kolbach ist eine Näherung für den Einfluss des Wassers auf den Maische-pH.
-          Säuremengen vorsichtig dosieren und den pH-Wert nach Möglichkeit nachmessen.</p>
+          Der Maische-pH ist nur eine grobe Schätzung (Malzfarbe und Restalkalität). Säuremengen vorsichtig dosieren und den pH nach 10 Minuten Rast nachmessen.</p>
       </section>`;
     aktualisiere();
   };
@@ -141,9 +141,12 @@ export function wasserView(root, rezeptId) {
     const zielGesetzt = z.zielRA !== '' && z.zielRA != null;
     const ziel = zielGesetzt ? num(z.zielRA) : emp?.max;
     const raOk = ziel == null || b.nach.ra <= ziel + 0.05;
+    const ph = maischePh(ebc ?? 10, b.nach.ra);
+    const phOk = ph.ph >= 5.15 && ph.ph <= 5.65;
     root.querySelector('#ergebnis').innerHTML =
       kachel('Restalkalität vorher', fmt(b.vor.ra), '°dH') +
       kachel('Restalkalität nachher', `<b class="${raOk ? 'gut' : 'schlecht'}">${fmt(b.nach.ra)}</b>`, '°dH') +
+      kachel('Maische-pH (Schätzung)', `<b class="${phOk ? 'gut' : 'schlecht'}">${fmt(ph.ph, 2)}</b>`, '', `<span class="kz-n">${ebc != null ? `bei ${fmt(ebc, 0)} EBC` : 'bei angenommenen 10 EBC'}; Ziel 5,2–5,6</span>`) +
       kachel('Gesamthärte', fmt(b.nach.gesamt), '°dH') +
       kachel('Sulfat : Chlorid', b.so4cl == null ? '–' : fmt(b.so4cl), '', `<span class="kz-n">${b.so4cl == null ? '' : b.so4cl > 2 ? 'hopfenbetont' : b.so4cl < 0.8 ? 'malzbetont' : 'ausgewogen'}</span>`);
 
