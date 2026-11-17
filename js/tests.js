@@ -99,6 +99,9 @@ nahe('Gips hebt Sulfat', beh.profil.so4, 40 + (5 * 557.7) / 27, 0.01);
 const ml = c.milchsaeureFuerRa(h.ra, 0, 27);
 nahe('Milchsäure für RA 0', ml, (h.ra * 0.3566 * 27) / 10.53, 0.001);
 nahe('RA nach Säure = 0', c.wasserBehandeln(profil, 27, { milchsaeureMl: ml }).nach.ra, 0, 0.001);
+nahe('Maische-pH hell, RA 0', c.maischePh(7, 0).ph, 5.692, 0.001);
+nahe('Maische-pH steigt mit RA', c.maischePh(7, 5).ph - c.maischePh(7, 0).ph, 0.15, 0.001);
+nahe('Maische-pH Untergrenze Basis', c.maischePh(500, 0).basis, 5.2, 0.001);
 
 // Karbonisierung
 nahe('Rest-CO₂ bei 20 °C', c.restCo2(20), 1.66, 0.03);

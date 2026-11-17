@@ -1,6 +1,6 @@
 // Service Worker: macht Brewsaw offline nutzbar.
 // Strategie: erst Netzwerk (damit Aktualisierungen sofort ankommen), sonst Cache.
-const CACHE = 'brewsaw-v10';
+const CACHE = 'brewsaw-v11';
 const DATEIEN = [
   './',
   'index.html',

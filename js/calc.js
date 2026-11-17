@@ -253,6 +253,16 @@ export function milchsaeureFuerRa(raIst, raZiel, volL) {
   return Math.max(0, ((raIst - raZiel) * MMOL_JE_DH * volL) / MILCHSAEURE_MMOL_ML);
 }
 
+/**
+ * Grobe Schätzung des Maische-pH (Kolbach-Näherung, kein Messwert).
+ * Basis: pH der Maische mit destilliertem Wasser, sinkt mit der Malzfarbe;
+ * je °dH Restalkalität steigt der pH um etwa 0,03.
+ */
+export function maischePh(ebc, raGrad) {
+  const basis = Math.max(5.2, 5.72 - 0.004 * num(ebc));
+  return { basis, ph: basis + 0.03 * num(raGrad) };
+}
+
 /** Richtwert für die Restalkalität (°dH) abhängig von der Bierfarbe. */
 export function raEmpfehlung(ebc) {
   if (ebc < 8) return { max: 0, text: 'sehr helle Biere (Pils): RA ≤ 0 °dH' };
