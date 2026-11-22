@@ -39,6 +39,13 @@ Rast-Timer kann beim Erreichen der Temperatur automatisch starten, und der Maisc
   BrewDog nennt keine Alphasäuren und Malzfarben; die App ergänzt typische Werte.
 - Rezepte von Brewer's Friend, Brewfather u. a. lassen sich dort als BeerXML exportieren und hier importieren.
 
+## KI-Hilfe (Google Gemini)
+
+Unter „KI" kann die App Rezepte entwerfen, Rezepte prüfen und Fragen zum Brautag beantworten.
+Jeder Nutzer trägt seinen **eigenen** Gemini-Schlüssel ein (kostenlos in Google AI Studio erzeugt). Der Schlüssel liegt nur
+im Browser des Nutzers, nicht im Code und nicht in den Sicherungen, und geht nur an `generativelanguage.googleapis.com`.
+Mit jeder Anfrage werden die gewählten Rezept- und Messdaten an Google gesendet. Antworten werden vor dem Anlegen eines Rezepts streng geprüft.
+
 ## Android-App
 
 Die Android-App ist eine „Trusted Web Activity": Sie öffnet die veröffentlichte Web-App in Chrome ohne

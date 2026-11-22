@@ -9,6 +9,7 @@ import { sudView } from './views/sud.js';
 import { brautagView } from './views/brautag.js';
 import { wasserView } from './views/wasser.js';
 import { lagerView } from './views/lager.js';
+import { kiView } from './views/ki.js';
 import { einstellungenView, themeAnwenden } from './views/einstellungen.js';
 
 const ROUTEN = [
@@ -19,6 +20,7 @@ const ROUTEN = [
   [/^#\/sud\/([\w-]+)\/brautag$/, brautagView, 'sude'],
   [/^#\/wasser(?:\/([\w-]+))?$/, wasserView, 'wasser'],
   [/^#\/lager$/, lagerView, 'lager'],
+  [/^#\/ki$/, kiView, 'ki'],
   [/^#\/einstellungen$/, einstellungenView, 'einstellungen'],
 ];
 

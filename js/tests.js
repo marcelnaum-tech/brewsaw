@@ -6,12 +6,15 @@ import { leseBeerXml } from './beerxml.js';
 import * as g from './grainfather.js';
 import { bereinige } from './store.js';
 import { istBildUrl } from './bilder.js';
+import { bereinigeKiRezept } from './ki.js';
 
 const ergebnisse = [];
 function nahe(name, ist, soll, tol) {
   const ok = Math.abs(ist - soll) <= tol;
   ergebnisse.push({ name, ok, ist, soll, tol });
 }
+
+const ok = (name, bedingung) => nahe(name, bedingung ? 1 : 0, 1, 0);
 
 // Dichte
 nahe('12 °P → SG 1,0484', c.platoToSg(12), 1.0484, 0.0005);
@@ -308,6 +311,27 @@ if (bfAntwort?.ok) {
   nahe('Brewfather: Hauptguss 24,57 l', bf.wasser.hauptguss, 24.57, 0.01);
   nahe('Brewfather: Pfannevoll 28 l', bf.wasser.pfannevollHeiss, 28, 0.2);
   nahe('Brewfather: 23 l im Gärfass', bf.wasser.gaerfass, 23, 1e-9);
+}
+
+// KI: Antworten sind nicht vertrauenswürdig und werden streng bereinigt
+{
+  const roh = '```json\n' + JSON.stringify({
+    name: '<img src=x onerror=alert(1)>Pale Ale', stil: 'APA', ausschlagL: 9999, kochzeit: 60,
+    malts: [{ name: 'Pale Ale Malz', kg: 4.5, ebc: 6, potential: 80 }, { name: 'Böse', kg: -5 }],
+    hops: [{ name: 'Citra', g: 20, alpha: 12, art: 'javascript:alert(1)', form: 'x', zeit: 10 }],
+    hefe: { name: 'US-05', evg: 78, temp: 18 },
+    rasten: [{ name: 'Rast', temp: 65, dauer: 60 }],
+  }) + '\n```';
+  const r = bereinigeKiRezept(roh);
+  ok('KI: Markdown-Rahmen wird entfernt, Rezept gelesen', r.malts.length === 2 && r.malts[0].kg === 4.5);
+  ok('KI: unzulässige Hopfenart wird zu „kochen“', r.hops[0].art === 'kochen' && r.hops[0].form === 'pellets');
+  ok('KI: Menge wird begrenzt, negative Malzmenge auf 0', r.ausschlagL === 200 && r.malts[1].kg === 0);
+  ok('KI: Rezept bekommt Tag „KI“', r.tags === 'KI');
+  let abgelehnt = 0;
+  for (const text of ['das ist kein json', '{"name":"x","malts":[]}', '{"name":"x","malts":[{"name":"a","kg":0}]}']) {
+    try { bereinigeKiRezept(text); } catch { abgelehnt++; }
+  }
+  ok('KI: ungültige Antworten werden abgelehnt', abgelehnt === 3);
 }
 
 const fehler = ergebnisse.filter((e) => !e.ok);

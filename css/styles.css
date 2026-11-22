@@ -355,3 +355,11 @@ h2 + .zrow, .felder + .zrow, .hinweis + .zrow, datalist + .zrow { border-top: 0;
 #gf .schalter-gruppe { display: inline-flex; align-items: center; gap: 6px; }
 #gf .schalter-gruppe b { min-width: 64px; }
 #gf .schalter-gruppe .btn { min-width: 64px; }
+
+/* KI-Hilfe */
+.ki-chat { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.ki-chat:empty { display: none; }
+.ki-msg { padding: 9px 12px; border-radius: 10px; background: var(--surface-2); line-height: 1.45; overflow-wrap: anywhere; }
+.ki-msg.ich { background: var(--accent-soft, var(--surface-2)); margin-left: 12%; }
+.ki-msg.ki { margin-right: 6%; }
+.ki-wer { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 2px; }

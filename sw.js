@@ -1,6 +1,6 @@
 // Service Worker: macht Brewsaw offline nutzbar.
 // Strategie: erst Netzwerk (damit Aktualisierungen sofort ankommen), sonst Cache.
-const CACHE = 'brewsaw-v12';
+const CACHE = 'brewsaw-v13';
 const DATEIEN = [
   './',
   'index.html',
@@ -21,6 +21,8 @@ const DATEIEN = [
   'js/grainfather.js',
   'js/suche.js',
   'js/beerxml.js',
+  'js/ki.js',
+  'js/views/ki.js',
   'js/views/rezepte.js',
   'js/views/rezept.js',
   'js/views/sude.js',
