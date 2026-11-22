@@ -45,6 +45,8 @@ export function rezepteView(root) {
         ${tagListe(r.tags).length ? `<span class="tags">${tagListe(r.tags).map((t) => `<button type="button" class="tag" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</span>` : ''}
       </span></a>`;
 
+  const aktiveFilter = () => ['kat', 'quelle', 'farbe', 'bittere', 'staerke', 'sort'].filter((k) => f[k]).length;
+
   const zeichneListe = () => {
     const eigene = filtere(meine(), { ...f, sort: f.sort || 'neu' });
     const bib = filtere(bibliothek(), f);
@@ -59,6 +61,9 @@ export function rezepteView(root) {
       b.classList.toggle('aktiv', an);
       b.setAttribute('aria-selected', an);
     });
+    const fa = root.querySelector('#fanzahl');
+    fa.textContent = aktiveFilter();
+    fa.hidden = !aktiveFilter();
     root.querySelector('#reset').hidden = !filterAktiv(f);
     root.querySelector('#anzahl').textContent = filterAktiv(f)
       ? `${liste.length} von ${gesamt} Rezepten gefunden`
@@ -104,6 +109,8 @@ export function rezepteView(root) {
 
       <section class="card suche">
         <input type="search" id="q" value="${esc(f.q)}" placeholder="Suchen nach Name, Stil, Zutat oder Tag – z. B. „weizen citra“" aria-label="Rezepte durchsuchen" autocomplete="off">
+        <details class="filterbox" ${aktiveFilter() || innerWidth >= 700 ? 'open' : ''}>
+        <summary><span>Filter &amp; Sortierung</span> <span class="badge" id="fanzahl" hidden></span></summary>
         <div class="filter">
           <select id="kat" aria-label="Kategorie">${optionen(KATEGORIEN, f.kat, 'Alle Kategorien')}</select>
           <select id="quelle" aria-label="Quelle">${optionen(QUELLEN, f.quelle, 'Alle Quellen')}</select>
@@ -116,6 +123,7 @@ export function rezepteView(root) {
             'Standardsortierung',
           )}</select>
         </div>
+        </details>
         <p class="muted zeile"><span id="anzahl"></span> <button class="link" id="reset" data-act="reset" hidden>Filter zurücksetzen</button></p>
       </section>
 

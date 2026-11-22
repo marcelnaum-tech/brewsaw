@@ -476,3 +476,18 @@ input.titel:focus, input.untertitel:focus { box-shadow: none; background: transp
   .card { padding: 16px 14px; border-radius: 16px; }
   h1 { font-size: 1.55rem; }
 }
+
+/* Einklappbarer Filter */
+.filterbox summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 12px 4px 4px; min-height: 44px; }
+.filterbox summary::-webkit-details-marker { display: none; }
+.filterbox summary::before { content: '▸'; color: var(--muted); transition: transform 0.15s; }
+.filterbox[open] summary::before { transform: rotate(90deg); }
+.filterbox .badge { background: var(--accent); color: var(--accent-ink); }
+@media (min-width: 700px) { .filterbox summary { display: none; } }
+[hidden] { display: none !important; }
+
+/* Schrittleiste im Brautag: alle Schritte passen in die Breite */
+.schritte { overflow-x: visible; gap: 5px; }
+.schritte li { flex: 1 1 0; min-width: 0; }
+.schritte button { height: 38px; padding: 0; font-size: 0.9rem; }
+.checkliste input[type='checkbox'], .gaben input[type='checkbox'] { accent-color: var(--accent); }
