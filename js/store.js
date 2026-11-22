@@ -1,6 +1,7 @@
 // Datenhaltung: alles liegt lokal im Browser (localStorage), mit Datei-Export/-Import.
 import { num, runde, kennzahlen, hefeEmpfehlung, HEFE_PAKET_G } from './calc.js';
 import { BIBLIOTHEK } from './bibliothek.js';
+import { WASSERPROFILE } from './data.js';
 import { alleBilder, ersetzeBilder, raeumeAuf } from './bilder.js';
 
 const KEY = 'brewsaw.v1';
@@ -32,7 +33,7 @@ function standard() {
         hauptgussLkg: 4,
         totraumL: 0,
       },
-      wasserprofil: { name: 'Mein Leitungswasser', ca: 80, mg: 15, na: 10, so4: 40, cl: 20, hco3: 250 },
+      wasserprofil: (({ info, ...p }) => p)(WASSERPROFILE[0]),
       wasserRezeptId: '',
       wasserFrei: { schuettungKg: 4.5, ausschlagL: 20, kochzeit: 60, zugaben: leereZugaben() },
     },

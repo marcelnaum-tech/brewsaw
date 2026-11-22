@@ -4,6 +4,7 @@ import {
 } from '../calc.js';
 import { state, speichern, leereZugaben } from '../store.js';
 import { esc, fmt, bind, inp, kachel, toast } from '../ui.js';
+import { WASSERPROFILE } from '../data.js';
 
 const IONEN_NAMEN = [
   ['ca', 'Calcium'],
@@ -87,6 +88,12 @@ export function wasserView(root, rezeptId) {
       <section class="card">
         <h2>Ausgangswasser</h2>
         <p class="hinweis">Die Werte stehen in der Trinkwasseranalyse deines Wasserversorgers (Angaben in mg/l).</p>
+        <div class="zrow">
+          <label class="fld"><span>Vorlage</span><select id="profilwahl"><option value="">Wasserprofil wählen …</option>
+            ${WASSERPROFILE.map((x, i) => `<option value="${i}">${esc(x.name)}</option>`).join('')}</select></label>
+          <button class="btn" data-act="profil">Vorlage laden</button>
+        </div>
+        <p class="hinweis" id="profilinfo"></p>
         <div class="felder">
           ${inp('Bezeichnung', 'profil.name', p.name, { type: 'text', cls: 'wide' })}
           ${IONEN_NAMEN.map(([k, n]) => inp(n, 'profil.' + k, p[k], { unit: 'mg/l' })).join('')}
@@ -192,7 +199,18 @@ export function wasserView(root, rezeptId) {
   });
 
   root.addEventListener('click', (e) => {
-    if (e.target.closest('[data-act]')?.dataset.act !== 'saeure') return;
+    const akt = e.target.closest('[data-act]')?.dataset.act;
+    if (akt === 'profil') {
+      const v = WASSERPROFILE[root.querySelector('#profilwahl').value];
+      if (!v) return toast('Bitte zuerst eine Vorlage wählen.');
+      const { info, ...werte } = v;
+      Object.assign(s.wasserprofil, werte);
+      speichern();
+      zeichne();
+      root.querySelector('#profilinfo').textContent = info;
+      return toast('Wasserprofil geladen.');
+    }
+    if (akt !== 'saeure') return;
     const { w, ebc } = mengen();
     const z = zugaben();
     const ziel = z.zielRA !== '' && z.zielRA != null ? num(z.zielRA) : ebc != null ? raEmpfehlung(ebc).max : 0;

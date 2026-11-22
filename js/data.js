@@ -127,3 +127,14 @@ export const KATEGORIEN = [
 ];
 
 export const kategorieName = (key) => KATEGORIEN.find(([k]) => k === key)?.[1] || '';
+
+// Wasserprofile (mg/l). Quelle: Trinkwasseranalyse der WAG, Aufbereitung Roetgen,
+// Probenahmestelle „Roetgen TW Netzeinspeisung", Mittelwerte 01.01.–31.12.2025
+// (veröffentlicht von den Stadtwerken Übach-Palenberg / STAWAG).
+export const WASSERPROFILE = [
+  {
+    name: 'Übach-Palenberg (Stadtwerke, WAG Roetgen 2025)',
+    ca: 21, mg: 3.1, na: 13, so4: 24, cl: 17, hco3: 52,
+    info: 'Mittelwerte 2025, Gesamthärte 3,7 °dH (weich), pH 8,95. Messwerte schwanken im Jahr, z. B. Calcium 19–23 mg/l.',
+  },
+];
