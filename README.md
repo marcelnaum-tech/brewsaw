@@ -13,7 +13,7 @@ Web-App (PWA) für Hobbybrauer mit Einkocher/Malzrohr-Anlage.
 
 ## Starten
 
-Doppelklick auf `start.bat` (benötigt Python, startet `server.py`) – die App öffnet sich unter <http://localhost:5173/>.
+Doppelklick auf `start.bat` (benötigt Python, startet `server.py`) – die App öffnet sich unter <http://localhost:5199/>.
 
 Die App braucht keinen Build-Schritt: reines HTML, CSS und JavaScript. Der Ordner kann unverändert
 auf jeden statischen Webspace kopiert werden; über HTTPS lässt sie sich dann auf Handy und Tablet
@@ -74,7 +74,7 @@ eine Sicherungsdatei herunterladen und wieder einlesen.
 | Pfad | Inhalt |
 | --- | --- |
 | `js/calc.js` | Brauberechnungen (reine Funktionen) |
-| `js/tests.js`, `tests.html` | Prüfrechnungen – `http://localhost:5173/tests.html` öffnen |
+| `js/tests.js`, `tests.html` | Prüfrechnungen – `http://localhost:5199/tests.html` öffnen |
 | `js/store.js` | Datenhaltung, Lager, Export/Import |
 | `js/data.js` | Stammdaten für Malz, Hopfen, Hefe, Kategorien |
 | `js/bibliothek.js` | Rezeptbibliothek (20 l, 65 % Sudhausausbeute) |
