@@ -37,6 +37,7 @@ Rast-Timer kann beim Erreichen der Temperatur automatisch starten, und der Maisc
 - BrewDog „DIY Dog“: `js/bibliothek-diydog.js`, erzeugt mit `tools/diydog_umwandeln.py` aus dem Datensatz
   <https://github.com/sammdec/punkapi>. Laut dessen Lizenz frei nutzbar und teilbar, **nicht für kommerzielle Zwecke**.
   BrewDog nennt keine Alphasäuren und Malzfarben; die App ergänzt typische Werte.
+  Übernommen sind nur Zutaten- und Verfahrensangaben, keine Beschreibungstexte. Brewsaw ist nicht mit BrewDog verbunden.
 - Rezepte von Brewer's Friend, Brewfather u. a. lassen sich dort als BeerXML exportieren und hier importieren.
 
 ## KI-Hilfe (Google Gemini)
@@ -84,3 +85,10 @@ eine Sicherungsdatei herunterladen und wieder einlesen.
 | `js/brautag.js` | Brautag-Ablauf, Timer, Alarme |
 | `js/views/` | Ansichten |
 | `sw.js`, `manifest.webmanifest` | Offline-Betrieb und Installation |
+
+## Lizenz und Rechtliches
+
+Der Programmcode steht unter der MIT-Lizenz (siehe `LICENSE`). Ausgenommen ist `js/bibliothek-diydog.js` mit den BrewDog-Rezepten:
+Dafür gilt nur die Freigabe des Datensatzes (frei nutzbar und teilbar, **nicht kommerziell**). Solange diese Datei enthalten ist,
+darf Brewsaw nicht kommerziell genutzt werden. Namen wie BrewDog, Grainfather, Brewfather und Brewer's Friend sind Marken ihrer Inhaber;
+Brewsaw ist mit diesen Firmen nicht verbunden. Datenschutz-Hinweise stehen in der App unter „Optionen“.

@@ -182,10 +182,7 @@ def wandle(b):
 
     abv, ibu, ebc = zahl(b.get("abv")), zahl(b.get("ibu")), zahl(b.get("ebc"))
     notiz = []
-    if b.get("brewers_tips"):
-        notiz.append(b["brewers_tips"].strip())
-    if b["method"].get("twist"):
-        notiz.append("Besonderheit: " + b["method"]["twist"].strip().rstrip(".") + ".")
+    # BrewDogs Beschreibungstexte (brewers_tips, twist) werden bewusst nicht übernommen.
     if extras:
         notiz.append("Weitere Zutaten laut BrewDog: " + "; ".join(extras) + ".")
     angaben = [f"{kurz(abv)} % vol" if abv else "", f"{kurz(ibu)} IBU" if ibu else "", f"{kurz(ebc)} EBC" if ebc else ""]
@@ -220,6 +217,7 @@ def main(quelle, ziel):
         f.write("// Automatisch erzeugt von tools/diydog_umwandeln.py – nicht von Hand bearbeiten.\n")
         f.write("// Rezepte aus BrewDogs „DIY Dog“ (Datensatz: github.com/sammdec/punkapi).\n")
         f.write("// Laut Lizenz des Datensatzes frei nutzbar und teilbar, jedoch nicht für kommerzielle Zwecke.\n")
+        f.write("// Nur Zutaten- und Verfahrensangaben; BrewDogs Beschreibungstexte (Tipps, Besonderheiten) sind bewusst nicht enthalten.\n")
         f.write("// Format: i Nr., n Name, s Stil, k Kategorie, m Malze [Name, kg, EBC, Extrakt %, Kochzugabe],\n")
         f.write("// h Hopfen [Name, g, Alpha %, Art, Zeit, °C], y Hefe [Name, Vergärungsgrad %, °C], r Rasten [°C, min], t Notizen.\n")
         f.write("export const DIYDOG = [\n")

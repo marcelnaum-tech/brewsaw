@@ -157,7 +157,7 @@ export function rezepteView(root) {
         <h3>Hefe</h3><p>${hefeEmpfehlung(r.ausschlagL, k.sw, r.hefe).pakete} Pkg. ${esc(r.hefe.name)} · ${fmt(r.hefe.temp, 0)} °C</p>
         <h3>Maischplan</h3>
         <ul><li>Einmaischen bei ${r.einmaischTemp} °C</li>${r.rasten.map((x) => `<li>${esc(x.name)}: ${x.temp} °C, ${x.dauer} min</li>`).join('')}</ul>
-        ${r.quelle === 'brewdog' ? `<p class="hinweis">Rezept aus BrewDogs „DIY Dog“ (frei für nicht-kommerzielle Nutzung). BrewDog nennt keine Alphasäuren und Malzfarben – die App rechnet mit typischen Werten, daher können Bittere und Farbe von BrewDogs Angabe abweichen.</p>` : ''}
+        ${r.quelle === 'brewdog' ? `<p class="hinweis">Rezept aus BrewDogs „DIY Dog“ (frei für nicht-kommerzielle Nutzung, nur Zutaten- und Verfahrensangaben; nicht mit BrewDog verbunden). BrewDog nennt keine Alphasäuren und Malzfarben – die App rechnet mit typischen Werten, daher können Bittere und Farbe von BrewDogs Angabe abweichen.</p>` : ''}
         <p class="hinweis">Beim Übernehmen wird das Rezept auf deine Anlage umgerechnet
           (${fmt(num(a.ausschlagL), 0)} l, ${fmt(num(a.sha), 0)} % Sudhausausbeute) und lässt sich danach frei bearbeiten.</p>`,
       ok: 'In meine Rezepte übernehmen',

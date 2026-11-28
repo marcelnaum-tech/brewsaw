@@ -58,6 +58,24 @@ export function einstellungenView(root) {
         <p class="muted">${state.rezepte.length} Rezepte · ${state.sude.length} Sude · ${state.lager.length} Lagerposten</p>
       </section>
 
+      <section class="card">
+        <h2>Rechtliches &amp; Quellen</h2>
+        <p class="hinweis"><b>Nicht kommerziell:</b> Brewsaw ist ein privates Hobbyprojekt ohne Werbung und ohne Einnahmen und darf nicht
+          kommerziell genutzt werden, solange die BrewDog-Rezepte enthalten sind.</p>
+        <p class="hinweis"><b>BrewDog „DIY Dog“:</b> Die Rezepte der Bibliothek mit dem Zeichen „BrewDog“ stammen aus BrewDogs frei veröffentlichten
+          DIY-Dog-Rezepten (über den Datensatz <a href="https://github.com/sammdec/punkapi" target="_blank" rel="noopener noreferrer">sammdec/punkapi</a>,
+          frei nutzbar und teilbar, aber nicht für kommerzielle Zwecke). Übernommen sind nur Zutaten- und Verfahrensangaben;
+          fehlende Alphasäuren, Malzfarben und die Ausbeute sind von Brewsaw ergänzt und daher keine Originalangaben von BrewDog.</p>
+        <p class="hinweis"><b>Marken:</b> BrewDog, Punk IPA, Grainfather, Brewfather, Brewer’s Friend und weitere genannte Namen sind Marken ihrer
+          jeweiligen Inhaber. Brewsaw ist weder mit diesen Firmen verbunden noch von ihnen unterstützt; die Namen dienen nur zur Angabe der
+          Herkunft oder Kompatibilität.</p>
+        <p class="hinweis"><b>Grainfather-Anbindung:</b> beruht auf dem inoffiziellen, von der Community beschriebenen Bluetooth-Protokoll
+          (<a href="https://github.com/clausbroch/Grainfather-Bluetooth-Protocol" target="_blank" rel="noopener noreferrer">clausbroch</a>, MIT). Nutzung auf eigene Verantwortung.</p>
+        <p class="hinweis"><b>Datenschutz:</b> Brewsaw speichert alle Daten nur in deinem Browser und sendet nichts an einen eigenen Server.
+          Nur bei Nutzung der KI-Funktion gehen die gewählten Rezept- und Messdaten mit deinem eigenen Schlüssel an Google. Der Dienst, der die Seite
+          ausliefert (GitHub Pages), protokolliert technisch bedingt Zugriffe. Der Code steht unter der MIT-Lizenz (ohne die BrewDog-Rezeptdatei).</p>
+      </section>
+
       <p class="hinweis">Brewsaw – Brauhelfer für Hobbybrauer. Alle Berechnungen sind Näherungen (Bittere nach Tinseth mit der Würzedichte vor dem Kochen, Farbe nach Morey,
         Alkohol nach Balling, Restalkalität nach Kolbach) und ersetzen keine eigenen Messungen.</p>`;
   };
